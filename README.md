@@ -2,6 +2,8 @@
 
 Minimal **Next.js Cache Components** (`use cache`, `cacheLife`, `cacheTag`) repro deployed like **ecom-app-storefront**: **OpenNext Cloudflare** + **Wrangler** with R2 incremental cache and the same Durable Object bindings (queue, sharded tag cache, purge). **next-intl** is wired the same way as the storefront (`defineRouting` with `localePrefix: 'always'`, `localeDetection: false`, `getRequestConfig` + per-request cached locale, `loadMessages` with **at → de** message fallback).
 
+**`master` uses stock `@opennextjs/aws`** (no Yarn patch). Expect **incremental-cache adapter** failures (`Failed to get body cache`, `Buffer.from` / `Received undefined`) on routes with nested `<Suspense>` once PPR/postponed entries are read from R2 — e.g. **`/en/nested-stream`**, **`/en/items/1`**. That matches upstream **before** a deserialization fix. To run with the same **Yarn patch** as **ecom-app-storefront** (optional `rsc` / segment payloads), use branch **`patched-opennext-aws`**: `git checkout patched-opennext-aws && yarn install`.
+
 After cloning: `corepack enable` (once per machine), then `yarn install`. Default **`yarn preview`** is **production-shaped** (real R2 incremental cache, DO tag cache, **`REPRO_NESTED_STREAM_SERIAL_COLUMNS=0`**, Link **prefetch** on) so you can reproduce Wrangler issues quickly. Use **`yarn preview:without-inc-cache`** when you need a **stable** local loop. **`.dev.vars`** supplies **`OPENNEXT_DISABLE_REGIONAL_CACHE`**, **`REPRO_RESPONSE_KB`**, etc.; any key set there **overrides** the same key from **`cross-env`** in a script (OpenNext merges Wrangler env on top of `process.env`).
 
 ### Large responses (stress test)
@@ -79,15 +81,19 @@ A full **document** request to **`/en/nested-stream`** can be **200** while many
 
 `wrangler.jsonc` drops BFF, URL locator, secrets, and custom domains so the project stays self-contained. Incremental cache + DO layout matches **ecom-app-storefront** (`WORKER_SELF_REFERENCE`, `NEXT_INC_CACHE_R2_BUCKET`, `NEXT_CACHE_*` DO classes, migrations v1/v2).
 
-### Preview 500s / `Failed to get body cache`
+### Preview 500s / `Failed to get body cache` (stock `master`)
 
-Next **16** can emit **PPR / postponed** prerender entries where the incremental-cache JSON has **`segmentData`** (and `meta.postponed`) but **no top-level `rsc`**. Stock OpenNext **@opennextjs/aws** still does `Buffer.from(cacheData.rsc)` for `type: "app"`, which throws (`Received undefined`). That hits **`/nested-stream`**, **`/items/[id]`**, etc.—routes with nested `<Suspense>`—but it is an **adapter/cache-shape** bug, not proof that React nested boundaries are invalid. Same pattern as **ecom-app-storefront**: this repo applies a **Yarn patch** on **`@opennextjs/aws`** (see `.yarn/patches/` and `package.json` `resolutions`) so **`rsc` / `rscData` are optional** and segment chunks use `segmentContent ?? ""`.
+Next **16** can emit **PPR / postponed** prerender entries where the incremental-cache JSON has **`segmentData`** (and `meta.postponed`) but **no top-level `rsc`**. Stock OpenNext **@opennextjs/aws** still does `Buffer.from(cacheData.rsc)` for `type: "app"`, which throws (`Received undefined`). That hits **`/nested-stream`**, **`/items/[id]`**, etc.—routes with nested `<Suspense>`—but it is an **adapter/cache-shape** bug, not proof that React nested boundaries are invalid.
+
+On **`master`**, this is **expected** once those cache shapes are served (especially **`yarn preview`** with real R2 reads). **`yarn preview:without-inc-cache`** skips *runtime* incremental cache reads and may **mask** that adapter failure while you debug other Wrangler issues.
+
+**Branch `patched-opennext-aws`:** check it out and **`yarn install`** to apply the **Yarn resolution** in **`package.json`** pointing at **`.yarn/patches/@opennextjs-aws-npm-3.10.4-36712c26c6.patch`** — optional **`rsc` / `rscData`**, `segmentContent ?? ""`, same mitigation pattern as **ecom-app-storefront**. Use that branch when you need a working incremental-cache read path and want to focus on issues like [#1115](https://github.com/opennextjs/opennextjs-cloudflare/issues/1115) or Flight corruption without **`Buffer.from(undefined)`** first.
 
 Earlier failures from the **regional Cache API** wrapper are separate; preview scripts still set **`OPENNEXT_DISABLE_REGIONAL_CACHE=1`** for fewer moving parts locally.
 
 ### “Page couldn’t load” / `Connection closed` (default `yarn preview`)
 
-Two separate classes of failure you are meant to see on default `yarn preview`:
+Two separate classes of failure you may see on default `yarn preview` **after** the incremental-cache adapter successfully returns a payload (on **`master`**, the stock adapter often **throws first** — use **`patched-opennext-aws`** to reach these behaviors reliably):
 
 1. **PPR cache hit on Workers** ([opennextjs-cloudflare#1115](https://github.com/opennextjs/opennextjs-cloudflare/issues/1115)): the **first** full navigation can work, then a **refresh** or **prefetch** may serve an **incomplete** cached shell so the RSC stream ends early. Browsers report **Connection closed** or **This page couldn’t load**.  
    **`yarn preview:without-inc-cache`** sets **`OPENNEXT_PREVIEW_DISABLE_INC_CACHE=1`** so the worker **never reads/writes** the incremental cache at runtime (always effectively “miss” → full streaming) — useful to confirm the issue is cache-related.
