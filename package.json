@@ -7,17 +7,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-<<<<<<< HEAD
-    "start:timing": "cross-env REPRO_TIMING=1 next start",
-    "preview": "rimraf .open-next && cross-env NODE_ENV=production OPEN_NEXT_DEBUG=true OPENNEXT_DISABLE_REGIONAL_CACHE=1 REPRO_RESPONSE_KB=64 REPRO_NESTED_STREAM_SERIAL_COLUMNS=0 opennextjs-cloudflare build && cross-env NODE_ENV=production OPEN_NEXT_DEBUG=true OPENNEXT_DISABLE_REGIONAL_CACHE=1 REPRO_RESPONSE_KB=64 REPRO_NESTED_STREAM_SERIAL_COLUMNS=0 opennextjs-cloudflare preview --env harsh",
-    "preview:timing": "rimraf .open-next && cross-env NODE_ENV=production REPRO_TIMING=1 OPEN_NEXT_DEBUG=true OPENNEXT_DISABLE_REGIONAL_CACHE=1 REPRO_RESPONSE_KB=64 REPRO_NESTED_STREAM_SERIAL_COLUMNS=0 opennextjs-cloudflare build && cross-env NODE_ENV=production REPRO_TIMING=1 OPEN_NEXT_DEBUG=true OPENNEXT_DISABLE_REGIONAL_CACHE=1 REPRO_RESPONSE_KB=64 REPRO_NESTED_STREAM_SERIAL_COLUMNS=0 opennextjs-cloudflare preview --env harsh",
-    "preview:without-inc-cache": "rimraf .open-next && cross-env NODE_ENV=production OPEN_NEXT_DEBUG=true OPENNEXT_DISABLE_REGIONAL_CACHE=1 OPENNEXT_PREVIEW_DISABLE_INC_CACHE=1 REPRO_RESPONSE_KB=8 REPRO_NESTED_STREAM_SERIAL_COLUMNS=1 REPRO_FLIGHT_SAFE_PAYLOAD=1 NEXT_PUBLIC_REPRO_NAV_PREFETCH=0 opennextjs-cloudflare build && cross-env NODE_ENV=production OPEN_NEXT_DEBUG=true OPENNEXT_DISABLE_REGIONAL_CACHE=1 OPENNEXT_PREVIEW_DISABLE_INC_CACHE=1 REPRO_RESPONSE_KB=8 REPRO_NESTED_STREAM_SERIAL_COLUMNS=1 REPRO_FLIGHT_SAFE_PAYLOAD=1 NEXT_PUBLIC_REPRO_NAV_PREFETCH=0 opennextjs-cloudflare preview",
-    "preview:without-inc-cache:timing": "rimraf .open-next && cross-env NODE_ENV=production REPRO_TIMING=1 OPEN_NEXT_DEBUG=true OPENNEXT_DISABLE_REGIONAL_CACHE=1 OPENNEXT_PREVIEW_DISABLE_INC_CACHE=1 REPRO_RESPONSE_KB=8 REPRO_NESTED_STREAM_SERIAL_COLUMNS=1 REPRO_FLIGHT_SAFE_PAYLOAD=1 NEXT_PUBLIC_REPRO_NAV_PREFETCH=0 opennextjs-cloudflare build && cross-env NODE_ENV=production REPRO_TIMING=1 OPEN_NEXT_DEBUG=true OPENNEXT_DISABLE_REGIONAL_CACHE=1 OPENNEXT_PREVIEW_DISABLE_INC_CACHE=1 REPRO_RESPONSE_KB=8 REPRO_NESTED_STREAM_SERIAL_COLUMNS=1 REPRO_FLIGHT_SAFE_PAYLOAD=1 NEXT_PUBLIC_REPRO_NAV_PREFETCH=0 opennextjs-cloudflare preview",
-    "preview:with-inc-cache": "yarn preview",
-=======
     "preview": "rimraf .open-next && cross-env NODE_ENV=production OPEN_NEXT_DEBUG=true OPENNEXT_DISABLE_REGIONAL_CACHE=1 REPRO_RESPONSE_KB=64 REPRO_NESTED_STREAM_SERIAL_COLUMNS=0 opennextjs-cloudflare build && cross-env NODE_ENV=production OPEN_NEXT_DEBUG=true OPENNEXT_DISABLE_REGIONAL_CACHE=1 REPRO_RESPONSE_KB=64 REPRO_NESTED_STREAM_SERIAL_COLUMNS=0 opennextjs-cloudflare preview --env harsh",
     "preview:without-inc-cache": "rimraf .open-next && cross-env NODE_ENV=production OPEN_NEXT_DEBUG=true OPENNEXT_DISABLE_REGIONAL_CACHE=1 OPENNEXT_PREVIEW_DISABLE_INC_CACHE=1 REPRO_RESPONSE_KB=8 REPRO_NESTED_STREAM_SERIAL_COLUMNS=1 REPRO_FLIGHT_SAFE_PAYLOAD=1 NEXT_PUBLIC_REPRO_NAV_PREFETCH=0 opennextjs-cloudflare build && cross-env NODE_ENV=production OPEN_NEXT_DEBUG=true OPENNEXT_DISABLE_REGIONAL_CACHE=1 OPENNEXT_PREVIEW_DISABLE_INC_CACHE=1 REPRO_RESPONSE_KB=8 REPRO_NESTED_STREAM_SERIAL_COLUMNS=1 REPRO_FLIGHT_SAFE_PAYLOAD=1 NEXT_PUBLIC_REPRO_NAV_PREFETCH=0 opennextjs-cloudflare preview",
->>>>>>> patched-opennext-aws
     "cf-deploy": "opennextjs-cloudflare deploy",
     "cf-typegen": "wrangler types --env-interface CloudflareEnv ./cloudflare-env.d.ts"
   },
