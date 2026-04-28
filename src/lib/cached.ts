@@ -31,7 +31,22 @@ export async function loadCachedPayload(
   await new Promise((r) => setTimeout(r, 25));
 
   const massiveTargetBytes = getTargetPayloadBytes();
-  const massiveBody = buildMassivePayloadString(massiveTargetBytes);
+  const flightSafe = process.env.REPRO_FLIGHT_SAFE_PAYLOAD === '1';
+
+  if (flightSafe) {
+    const massiveBody = `[REPRO_FLIGHT_SAFE_PAYLOAD: ${massiveTargetBytes} byte target — Lorem not sent in Flight; use yarn preview for full stress]`;
+    return {
+      routeKey,
+      locale,
+      extra: extra ?? null,
+      renderedAt: new Date().toISOString(),
+      massiveTargetBytes,
+      massiveCharCount: massiveTargetBytes,
+      massiveBody,
+    };
+  }
+
+  const massiveBodyFull = buildMassivePayloadString(massiveTargetBytes);
 
   return {
     routeKey,
@@ -39,7 +54,7 @@ export async function loadCachedPayload(
     extra: extra ?? null,
     renderedAt: new Date().toISOString(),
     massiveTargetBytes,
-    massiveCharCount: massiveBody.length,
-    massiveBody,
+    massiveCharCount: massiveBodyFull.length,
+    massiveBody: massiveBodyFull,
   };
 }
