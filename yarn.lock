@@ -1963,6 +1963,35 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@opennextjs/aws@patch:@opennextjs/aws@npm%3A3.10.4#./.yarn/patches/@opennextjs-aws-npm-3.10.4-36712c26c6.patch::locator=cache-components-cf%40workspace%3A.":
+  version: 3.10.4
+  resolution: "@opennextjs/aws@patch:@opennextjs/aws@npm%3A3.10.4#./.yarn/patches/@opennextjs-aws-npm-3.10.4-36712c26c6.patch::version=3.10.4&hash=e00c7d&locator=cache-components-cf%40workspace%3A."
+  dependencies:
+    "@ast-grep/napi": "npm:^0.40.5"
+    "@aws-sdk/client-cloudfront": "npm:3.984.0"
+    "@aws-sdk/client-dynamodb": "npm:3.984.0"
+    "@aws-sdk/client-lambda": "npm:3.984.0"
+    "@aws-sdk/client-s3": "npm:3.984.0"
+    "@aws-sdk/client-sqs": "npm:3.984.0"
+    "@node-minify/core": "npm:^8.0.6"
+    "@node-minify/terser": "npm:^8.0.6"
+    "@tsconfig/node18": "npm:^1.0.3"
+    aws4fetch: "npm:^1.0.20"
+    chalk: "npm:^5.6.2"
+    cookie: "npm:^1.0.2"
+    esbuild: "npm:0.25.4"
+    express: "npm:^5.1.0"
+    path-to-regexp: "npm:^6.3.0"
+    urlpattern-polyfill: "npm:^10.1.0"
+    yaml: "npm:^2.8.1"
+  peerDependencies:
+    next: ">=15.5.15 <16 || >=16.2.3"
+  bin:
+    open-next: dist/index.js
+  checksum: 10c0/664fbdd954973822546683a599fe8cc032e7f22262cd5e97870218c1b5abe3302f492d9d3109760d32fc234ee77fd5e888793f80cb681547ba07fc1dc46ad5ab
+  languageName: node
+  linkType: hard
+
 "@opennextjs/cloudflare@npm:^1.19.3":
   version: 1.19.4
   resolution: "@opennextjs/cloudflare@npm:1.19.4"

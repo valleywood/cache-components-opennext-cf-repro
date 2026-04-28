@@ -1,5 +1,7 @@
 # cache-components-cf
 
+> **Branch `patched-opennext-aws`:** this checkout enables the **Yarn patch** on **`@opennextjs/aws`** via **`package.json` → `resolutions`**. Use **`master`** for **stock** upstream (expect **`Buffer.from(undefined)`** on incremental-cache reads for PPR routes).
+
 Minimal **Next.js Cache Components** (`use cache`, `cacheLife`, `cacheTag`) repro deployed like **ecom-app-storefront**: **OpenNext Cloudflare** + **Wrangler** with R2 incremental cache and the same Durable Object bindings (queue, sharded tag cache, purge). **next-intl** is wired the same way as the storefront (`defineRouting` with `localePrefix: 'always'`, `localeDetection: false`, `getRequestConfig` + per-request cached locale, `loadMessages` with **at → de** message fallback).
 
 **`master` uses stock `@opennextjs/aws`** (no Yarn patch). Expect **incremental-cache adapter** failures (`Failed to get body cache`, `Buffer.from` / `Received undefined`) on routes with nested `<Suspense>` once PPR/postponed entries are read from R2 — e.g. **`/en/nested-stream`**, **`/en/items/1`**. That matches upstream **before** a deserialization fix. To run with the same **Yarn patch** as **ecom-app-storefront** (optional `rsc` / segment payloads), use branch **`patched-opennext-aws`**: `git checkout patched-opennext-aws && yarn install`.
