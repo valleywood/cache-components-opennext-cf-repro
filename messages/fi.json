@@ -1,0 +1,37 @@
+{
+  "LocaleSwitcher": { "label": "Kieli" },
+  "Nav": {
+    "home": "Etusivu",
+    "pageA": "Sivu A (prefetch oletus)",
+    "pageB": "Sivu B (prefetch=true)",
+    "pageC": "Sivu C (prefetch oletus)",
+    "item1": "Tuote 1",
+    "item2": "Tuote 2 (prefetch=true)",
+    "nestedStream": "Nested stream repro"
+  },
+  "Home": {
+    "title": "Etusivu",
+    "intro": "[fi] Minimal repro: use cache + next-intl + OpenNext Cloudflare."
+  },
+  "PageA": { "title": "Sivu A", "description": "Oletus prefetch." },
+  "PageB": { "title": "Sivu B", "description": "prefetch=true." },
+  "PageC": { "title": "Sivu C", "description": "Vertailusivu." },
+  "Item": {
+    "title": "Tuote {id}",
+    "description": "Dynaaminen segmentti + välimuistitettu payload."
+  },
+  "NestedStream": {
+    "title": "Sisäkkäinen Suspense + rinnakkaiset streamit",
+    "intro": "Useita Suspense-rajoja ja kaksi saraketta, joilla kummallakin täysi REPRO_RESPONSE_KB-cache. Suuren arvon ja yarn preview + Workers -testin kanssa RSC-chunkit.",
+    "columnTitle": "Sarake {label}",
+    "columnIntro": "Rinnakkainen async-raja; cacheTag sisältää sarakkeen.",
+    "massiveSectionTitle": "Payload sarake {label}",
+    "massiveSectionIntro": "Sisempi Suspense: täysi blob per sarake."
+  },
+  "Massive": {
+    "sizeHint": "Tavoitekoko (välimuisti):",
+    "bytes": "tavua",
+    "actualChars": "Merkkejä:",
+    "detailsSummary": "Suuri body ({count} merkkiä)."
+  }
+}

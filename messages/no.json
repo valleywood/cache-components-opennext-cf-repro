@@ -1,0 +1,46 @@
+{
+  "LocaleSwitcher": { "label": "Språk" },
+  "Nav": {
+    "home": "Hjem",
+    "pageA": "Side A (prefetch standard)",
+    "pageB": "Side B (prefetch=true)",
+    "pageC": "Side C (prefetch standard)",
+    "item1": "Element 1",
+    "item2": "Element 2 (prefetch=true)",
+    "nestedStream": "Nested stream repro"
+  },
+  "Home": {
+    "title": "Hjem",
+    "intro": "[no] Minimal repro: alle lenker bruker prefetch=true."
+  },
+  "PageA": {
+    "title": "Side A",
+    "description": "Standard prefetch fra Nav."
+  },
+  "PageB": {
+    "title": "Side B",
+    "description": "prefetch=true fra Nav."
+  },
+  "PageC": {
+    "title": "Side C",
+    "description": "Nok en standard-prefetch-rute."
+  },
+  "Item": {
+    "title": "Element {id}",
+    "description": "Dynamisk segment + cachet payload."
+  },
+  "NestedStream": {
+    "title": "Nested Suspense + parallelle streams",
+    "intro": "Flere Suspense-grenser og to kolonner med full REPRO_RESPONSE_KB-cache hver. Bruk høy REPRO_RESPONSE_KB med yarn preview for å stresse RSC-chunks på Workers.",
+    "columnTitle": "Kolonne {label}",
+    "columnIntro": "Søsken async-grense; cacheTag inkluderer kolonne-id.",
+    "massiveSectionTitle": "Payload kolonne {label}",
+    "massiveSectionIntro": "Indre Suspense: full blob per kolonne."
+  },
+  "Massive": {
+    "sizeHint": "Målstørrelse for cachet payload:",
+    "bytes": "bytes",
+    "actualChars": "Tegn (faktisk):",
+    "detailsSummary": "Stor cachet body ({count} tegn)."
+  }
+}

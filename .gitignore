@@ -1,0 +1,11 @@
+node_modules
+package-lock.json
+.next
+.open-next
+.wrangler
+coverage
+*.log
+.env
+.env.*
+!.env.example
+cloudflare-env.d.ts

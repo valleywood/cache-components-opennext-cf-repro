@@ -1,0 +1,37 @@
+{
+  "LocaleSwitcher": { "label": "Sprache" },
+  "Nav": {
+    "home": "Start",
+    "pageA": "Seite A (Prefetch Standard)",
+    "pageB": "Seite B (prefetch=true)",
+    "pageC": "Seite C (Prefetch Standard)",
+    "item1": "Artikel 1",
+    "item2": "Artikel 2 (prefetch=true)",
+    "nestedStream": "Nested-Stream-Repro"
+  },
+  "Home": {
+    "title": "Start",
+    "intro": "[de/at] Minimal repro: use cache + next-intl + OpenNext Cloudflare. (Locale at nutzt diese Meldungen.)"
+  },
+  "PageA": { "title": "Seite A", "description": "Standard-Prefetch." },
+  "PageB": { "title": "Seite B", "description": "prefetch=true." },
+  "PageC": { "title": "Seite C", "description": "Vergleichsroute." },
+  "Item": {
+    "title": "Artikel {id}",
+    "description": "Dynamisches Segment + gecachte Payload."
+  },
+  "NestedStream": {
+    "title": "Verschachtelte Suspense + parallele Streams",
+    "intro": "Mehrere Suspense-Grenzen und zwei Spalten mit jeweils vollem REPRO_RESPONSE_KB-Cache-Payload. Mit hohem REPRO_RESPONSE_KB und yarn preview Workers/Cold-Starts testen (RSC-Chunk-Reihenfolge).",
+    "columnTitle": "Spalte {label}",
+    "columnIntro": "Geschwister-Async-Grenze; cacheTag enthält Spalten-ID.",
+    "massiveSectionTitle": "Payload Spalte {label}",
+    "massiveSectionIntro": "Innere Suspense: voller Blob pro Spalte, eigener cacheTag."
+  },
+  "Massive": {
+    "sizeHint": "Zielgröße (Cache-Payload):",
+    "bytes": "Bytes",
+    "actualChars": "Zeichen:",
+    "detailsSummary": "Großer Cache-Body ({count} Zeichen)."
+  }
+}

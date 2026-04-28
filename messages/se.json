@@ -1,0 +1,37 @@
+{
+  "LocaleSwitcher": { "label": "Språk" },
+  "Nav": {
+    "home": "Hem",
+    "pageA": "Sida A (prefetch standard)",
+    "pageB": "Sida B (prefetch=true)",
+    "pageC": "Sida C (prefetch standard)",
+    "item1": "Artikel 1",
+    "item2": "Artikel 2 (prefetch=true)",
+    "nestedStream": "Nested stream repro"
+  },
+  "Home": {
+    "title": "Hem",
+    "intro": "[se] Minimal repro: use cache + next-intl + OpenNext Cloudflare."
+  },
+  "PageA": { "title": "Sida A", "description": "Standard prefetch." },
+  "PageB": { "title": "Sida B", "description": "prefetch=true." },
+  "PageC": { "title": "Sida C", "description": "Jämförelserutt." },
+  "Item": {
+    "title": "Artikel {id}",
+    "description": "Dynamiskt segment + cachad payload."
+  },
+  "NestedStream": {
+    "title": "Nästlade Suspense + parallella streams",
+    "intro": "Flera Suspense-gränser och två kolumner med var sitt fulla REPRO_RESPONSE_KB-cachepayload. Hög REPRO_RESPONSE_KB och yarn preview stressar RSC-chunks på Workers.",
+    "columnTitle": "Kolumn {label}",
+    "columnIntro": "Syskon-async-gräns; cacheTag innehåller kolumn-id.",
+    "massiveSectionTitle": "Payload kolumn {label}",
+    "massiveSectionIntro": "Inre Suspense: full blob per kolumn."
+  },
+  "Massive": {
+    "sizeHint": "Målstorlek (cachad payload):",
+    "bytes": "bytes",
+    "actualChars": "Tecken:",
+    "detailsSummary": "Stor cachad body ({count} tecken)."
+  }
+}
