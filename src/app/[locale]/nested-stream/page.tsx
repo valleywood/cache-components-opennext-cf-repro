@@ -11,7 +11,6 @@ import { Suspense } from 'react';
 import { PageWithMassivePayload } from '@/components/PageWithMassivePayload';
 import { loadCachedPayload } from '@/lib/cached';
 import { nestedStreamSerialColumns } from '@/lib/reproNestedStreamEnv';
-import { reproTimingPhase } from '@/lib/reproTiming';
 
 type PageParams = { locale: string };
 
@@ -37,10 +36,8 @@ export default function NestedStreamPage(props: Props) {
 async function OuterShell(props: Props) {
   const { locale } = await props.params;
   setRequestLocale(locale);
-  await reproTimingPhase('nested:outer-start', { locale });
   await sleep(8);
   const t = await getTranslations('NestedStream');
-  await reproTimingPhase('nested:outer-ready');
 
   return (
     <div>
@@ -56,9 +53,7 @@ async function OuterShell(props: Props) {
 async function MiddleGrid(props: Props) {
   const { locale } = await props.params;
   setRequestLocale(locale);
-  await reproTimingPhase('nested:middle-start', { locale });
   await sleep(24);
-  await reproTimingPhase('nested:middle-ready');
 
   if (nestedStreamSerialColumns()) {
     const colA = await ColumnBlockSequential(props, 'A', 12);
@@ -109,14 +104,8 @@ async function ColumnBlockSequential(
   setRequestLocale(locale);
   await sleep(staggerMs);
   const t = await getTranslations('NestedStream');
-  await reproTimingPhase('nested:col-frame', { label });
 
-  await reproTimingPhase('nested:col-payload-load-start', { label });
   const data = await loadCachedPayload('/nested-stream', locale, `col-${label}`);
-  await reproTimingPhase('nested:col-payload-loaded', {
-    label,
-    massiveCharCount: data.massiveCharCount,
-  });
 
   return (
     <section
@@ -147,7 +136,6 @@ async function ColumnFrame({
   setRequestLocale(locale);
   await sleep(staggerMs);
   const t = await getTranslations('NestedStream');
-  await reproTimingPhase('nested:col-frame', { label });
 
   return (
     <section
@@ -177,12 +165,7 @@ async function ColumnMassivePayload({
   setRequestLocale(locale);
   await sleep(16);
   const t = await getTranslations('NestedStream');
-  await reproTimingPhase('nested:col-payload-load-start', { label });
   const data = await loadCachedPayload('/nested-stream', locale, `col-${label}`);
-  await reproTimingPhase('nested:col-payload-loaded', {
-    label,
-    massiveCharCount: data.massiveCharCount,
-  });
 
   return (
     <PageWithMassivePayload
