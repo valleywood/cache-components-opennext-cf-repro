@@ -7,8 +7,6 @@ Minimal **Next.js Cache Components** (`use cache`, `cacheLife`, `cacheTag`) repr
 **`master` uses stock `@opennextjs/aws`** (no Yarn patch). Expect **incremental-cache adapter** failures (`Failed to get body cache`, `Buffer.from` / `Received undefined`) on routes with nested `<Suspense>` once PPR/postponed entries are read from R2 — e.g. **`/en/nested-stream`**, **`/en/items/1`**. That matches upstream **before** a deserialization fix. To run with the same **Yarn patch** as **ecom-app-storefront** (optional `rsc` / segment payloads), use branch **`patched-opennext-aws`**: `git checkout patched-opennext-aws && yarn install`.
 
 After cloning: `corepack enable` (once per machine), then `yarn install`. **`REPRO_*` vars must be defined for the Worker**, not only via npm **`cross-env`**: the isolate does **not** see your shell env. This repo sets them in **`wrangler.jsonc`** — top-level **`vars`** = stable preview (**`yarn preview:without-inc-cache`**), **`env.harsh`** = stress (**`yarn preview`**, which runs **`opennextjs-cloudflare preview --env harsh`**). **`cross-env`** on build/preview still aligns the **Node** side during **`opennextjs-cloudflare build`**. **`OPENNEXT_*`** stays in **`.dev.vars`**. Anything you add under **`REPRO_*`** in **`.dev.vars`** **overrides** `wrangler.jsonc` locally.
-<<<<<<< HEAD
-=======
 
 ### Local preview hygiene
 
@@ -19,7 +17,6 @@ After cloning: `corepack enable` (once per machine), then `yarn install`. **`REP
   yarn preview:without-inc-cache   # or yarn preview
   ```
 - **One dev server on port 8788** (see `wrangler.jsonc` → `dev.port`). A leftover **`workerd`** causes **Address already in use**.
->>>>>>> patched-opennext-aws
 
 ### Large responses (stress test)
 
@@ -57,16 +54,8 @@ For deployed workers, set `REPRO_RESPONSE_KB` in the Wrangler dashboard or `wran
 | `yarn build` | `next build` only |
 | `yarn start` | Production server on **http://localhost:3000** (after `yarn build`) |
 | `yarn cf-build` | OpenNext worker + assets into `.open-next/` |
-<<<<<<< HEAD
-| `yarn preview` | **Harsh:** same stack + **`opennextjs-cloudflare preview --env harsh`** → **`wrangler.jsonc` / `env.harsh`** (`REPRO_RESPONSE_KB=64`, parallel columns, full Lorem in Flight). |
-| `yarn preview:timing` | Like `yarn preview` with `REPRO_TIMING=1`. |
-| `yarn preview:without-inc-cache` | **Stable:** **`wrangler.jsonc` top-level `vars`** (`REPRO_RESPONSE_KB=8`, serial columns, **`REPRO_FLIGHT_SAFE_PAYLOAD=1`**) + dummy tag cache + prefetch off. No `--env` (not `harsh`). |
-| `yarn preview:without-inc-cache:timing` | Like `yarn preview:without-inc-cache` with `REPRO_TIMING=1`. |
-| `yarn preview:with-inc-cache` | Alias for **`yarn preview`** (older name). |
-=======
 | `yarn preview` | **Harsh:** full OpenNext stack with **runtime incremental cache on** (R2 + DO tag cache / queue / purge) + **`opennextjs-cloudflare preview --env harsh`** → **`wrangler.jsonc` / `env.harsh`** (`REPRO_RESPONSE_KB=64`, parallel columns, full Lorem in Flight). |
 | `yarn preview:without-inc-cache` | **Stable:** **`wrangler.jsonc` top-level `vars`** (`REPRO_RESPONSE_KB=8`, serial columns, **`REPRO_FLIGHT_SAFE_PAYLOAD=1`**) + dummy tag cache + prefetch off. No `--env` (not `harsh`). |
->>>>>>> patched-opennext-aws
 | `yarn cf-deploy` | Deploy worker (configure routes/account as needed) |
 | `yarn cf-typegen` | Regenerate `cloudflare-env.d.ts` (not committed by default) |
 
