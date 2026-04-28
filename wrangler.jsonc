@@ -15,6 +15,53 @@
   "dev": {
     "port": 8788,
   },
+  /**
+   * REPRO_* must live here (or .dev.vars), not only in npm `cross-env`:
+   * the Worker isolate does not see the shell env from `opennextjs-cloudflare preview`.
+   * Top-level = stable `yarn preview:without-inc-cache`. `env.harsh` = `yarn preview`.
+   */
+  "vars": {
+    "REPRO_RESPONSE_KB": "8",
+    "REPRO_NESTED_STREAM_SERIAL_COLUMNS": "1",
+    "REPRO_FLIGHT_SAFE_PAYLOAD": "1",
+  },
+  "env": {
+    "harsh": {
+      "vars": {
+        "REPRO_RESPONSE_KB": "64",
+        "REPRO_NESTED_STREAM_SERIAL_COLUMNS": "0",
+        "REPRO_FLIGHT_SAFE_PAYLOAD": "0",
+      },
+      "services": [
+        {
+          "binding": "WORKER_SELF_REFERENCE",
+          "service": "cache-components-cf",
+        },
+      ],
+      "r2_buckets": [
+        {
+          "binding": "NEXT_INC_CACHE_R2_BUCKET",
+          "bucket_name": "cache-components-cf-inc-cache",
+        },
+      ],
+      "durable_objects": {
+        "bindings": [
+          {
+            "name": "NEXT_CACHE_DO_QUEUE",
+            "class_name": "DOQueueHandler",
+          },
+          {
+            "name": "NEXT_TAG_CACHE_DO_SHARDED",
+            "class_name": "DOShardedTagCache",
+          },
+          {
+            "name": "NEXT_CACHE_DO_PURGE",
+            "class_name": "BucketCachePurge",
+          },
+        ],
+      },
+    },
+  },
   "assets": {
     "binding": "ASSETS",
     "directory": ".open-next/assets",

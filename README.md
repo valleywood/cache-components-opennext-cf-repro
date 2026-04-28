@@ -4,7 +4,7 @@ Minimal **Next.js Cache Components** (`use cache`, `cacheLife`, `cacheTag`) repr
 
 **`master` uses stock `@opennextjs/aws`** (no Yarn patch). Expect **incremental-cache adapter** failures (`Failed to get body cache`, `Buffer.from` / `Received undefined`) on routes with nested `<Suspense>` once PPR/postponed entries are read from R2 — e.g. **`/en/nested-stream`**, **`/en/items/1`**. That matches upstream **before** a deserialization fix. To run with the same **Yarn patch** as **ecom-app-storefront** (optional `rsc` / segment payloads), use branch **`patched-opennext-aws`**: `git checkout patched-opennext-aws && yarn install`.
 
-After cloning: `corepack enable` (once per machine), then `yarn install`. Default **`yarn preview`** is **production-shaped** (real R2 incremental cache, DO tag cache, **`REPRO_NESTED_STREAM_SERIAL_COLUMNS=0`**, Link **prefetch** on) so you can reproduce Wrangler issues quickly. Use **`yarn preview:without-inc-cache`** when you need a **stable** local loop — it sets **`REPRO_RESPONSE_KB=8`**, serial columns, **`REPRO_FLIGHT_SAFE_PAYLOAD=1`** (Lorem blob is **not** sent through RSC Flight; only a short placeholder), so Chrome/Safari stop corrupting the stream on **`/nested-stream`**. **`.dev.vars`** supplies **`OPENNEXT_DISABLE_REGIONAL_CACHE`**; **do not** put **`REPRO_RESPONSE_KB`** or **`REPRO_FLIGHT_SAFE_PAYLOAD`** there unless you want one value for *all* previews — keys there **override** `cross-env` (OpenNext merges Wrangler / `.dev.vars` on top of `process.env`).
+After cloning: `corepack enable` (once per machine), then `yarn install`. **`REPRO_*` vars must be defined for the Worker**, not only via npm **`cross-env`**: the isolate does **not** see your shell env. This repo sets them in **`wrangler.jsonc`** — top-level **`vars`** = stable preview (**`yarn preview:without-inc-cache`**), **`env.harsh`** = stress (**`yarn preview`**, which runs **`opennextjs-cloudflare preview --env harsh`**). **`cross-env`** on build/preview still aligns the **Node** side during **`opennextjs-cloudflare build`**. **`OPENNEXT_*`** stays in **`.dev.vars`**. Anything you add under **`REPRO_*`** in **`.dev.vars`** **overrides** `wrangler.jsonc` locally.
 
 ### Large responses (stress test)
 
@@ -12,9 +12,9 @@ Each route’s cached payload includes a big ASCII blob so HTML + incremental ca
 
 | Variable | Meaning |
 |----------|---------|
-| `REPRO_FLIGHT_SAFE_PAYLOAD` | When **`1`**, **`loadCachedPayload`** still runs **`'use cache'`** / tags / sizing, but replaces **`massiveBody`** with a short placeholder so huge Lorem is **not** serialized in **RSC Flight** (avoids Worker chunk corruption in Chrome/Safari). Set automatically on **`yarn preview:without-inc-cache`**. |
-| `REPRO_RESPONSE_KB` | Approximate payload size in **kilobytes** (default **512** if unset on Node **`yarn start` / `dev`**). Hard cap **16384** (16 MiB). **`yarn preview`** forces **`64`** (stress). **`yarn preview:without-inc-cache`** forces **`8`** (payload is still built for cache work, but **not** shipped in Flight when **`REPRO_FLIGHT_SAFE_PAYLOAD=1`**). If you set this in **`.dev.vars`**, it **overrides** scripts. |
-| `REPRO_NESTED_STREAM_SERIAL_COLUMNS` | When **`1`**, `/nested-stream` serializes columns — avoids two parallel huge RSC chunks that often break Chrome/Safari on Wrangler (**200** HTML, broken Flight). Default **`0`** (parallel **`Suspense`**) on **`yarn preview`** / **`yarn start`** to **show** that risk; **`yarn preview:without-inc-cache`** forces **`1`**. |
+| `REPRO_FLIGHT_SAFE_PAYLOAD` | **`1`** in **`wrangler.jsonc` / `vars`** (stable); **`0`** in **`env.harsh`**. When **`1`**, **`loadCachedPayload`** does not put the Lorem blob in Flight. |
+| `REPRO_RESPONSE_KB` | Set in **`wrangler.jsonc`** for the Worker (**`8`** default / **`64`** in **`env.harsh`**). If unset in the isolate, **`loadCachedPayload` falls back to 512 KB** → parallel columns + huge Flight (classic broken stream). npm **`cross-env` alone does not fix that. |
+| `REPRO_NESTED_STREAM_SERIAL_COLUMNS` | **`1`** (serial) in top-level **`wrangler.jsonc` `vars`**; **`0`** (parallel **`Suspense`**) in **`env.harsh`**. |
 
 Examples:
 
@@ -47,9 +47,9 @@ Set **`REPRO_TIMING=1`** (or `true`) to print **`[repro-timing]`** lines to the 
 | `yarn start` | Production server on **http://localhost:3000** (after `yarn build`) |
 | `yarn start:timing` | Same as `yarn start` but `REPRO_TIMING=1` (phase logs in terminal) |
 | `yarn cf-build` | OpenNext worker + assets into `.open-next/` |
-| `yarn preview` | **Showcase / harsh:** real **R2 incremental cache** + **DO tag cache**, **`REPRO_NESTED_STREAM_SERIAL_COLUMNS=0`** (parallel `/nested-stream`), **`REPRO_RESPONSE_KB=64`**, **`OPENNEXT_DISABLE_REGIONAL_CACHE=1`**, default Link **prefetch** (**on**). Expect [#1115](https://github.com/opennextjs/opennextjs-cloudflare/issues/1115) on refresh, prefetch **500**s, and/or Flight glitches on `/nested-stream` depending on browser and timing. |
+| `yarn preview` | **Harsh:** same stack + **`opennextjs-cloudflare preview --env harsh`** → **`wrangler.jsonc` / `env.harsh`** (`REPRO_RESPONSE_KB=64`, parallel columns, full Lorem in Flight). |
 | `yarn preview:timing` | Like `yarn preview` with `REPRO_TIMING=1`. |
-| `yarn preview:without-inc-cache` | **Stable local preview:** **`OPENNEXT_PREVIEW_DISABLE_INC_CACHE=1`**, **dummy tag cache + direct queue**, **`REPRO_NESTED_STREAM_SERIAL_COLUMNS=1`**, **`REPRO_FLIGHT_SAFE_PAYLOAD=1`**, **`NEXT_PUBLIC_REPRO_NAV_PREFETCH=0`**, **`REPRO_RESPONSE_KB=8`**. |
+| `yarn preview:without-inc-cache` | **Stable:** **`wrangler.jsonc` top-level `vars`** (`REPRO_RESPONSE_KB=8`, serial columns, **`REPRO_FLIGHT_SAFE_PAYLOAD=1`**) + dummy tag cache + prefetch off. No `--env` (not `harsh`). |
 | `yarn preview:without-inc-cache:timing` | Like `yarn preview:without-inc-cache` with `REPRO_TIMING=1`. |
 | `yarn preview:with-inc-cache` | Alias for **`yarn preview`** (older name). |
 | `yarn cf-deploy` | Deploy worker (configure routes/account as needed) |
