@@ -1,6 +1,5 @@
 import { getTranslations } from 'next-intl/server';
 
-import { reproTimingPhase } from '@/lib/reproTiming';
 import { Link } from '@/lib/i18n/navigation';
 
 /** Set `NEXT_PUBLIC_REPRO_NAV_PREFETCH=0` (e.g. `yarn preview:without-inc-cache`) to avoid RSC prefetch storms on Workers. */
@@ -8,8 +7,6 @@ const linkPrefetch = process.env.NEXT_PUBLIC_REPRO_NAV_PREFETCH !== '0';
 
 export async function Nav() {
   const t = await getTranslations('Nav');
-
-  await reproTimingPhase('nav:rendered');
 
   return (
     <nav
