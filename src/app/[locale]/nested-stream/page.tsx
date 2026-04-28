@@ -3,8 +3,7 @@
  * `loadCachedPayload` streams. If you see raw “Lorem ipsum” / junk at the top and
  * Chrome/Safari “This page couldn’t load” while `/nested-stream` is **200**, the RSC
  * Flight stream was likely corrupted (chunk ordering on the worker). Mitigations:
- * **`REPRO_NESTED_STREAM_SERIAL_COLUMNS=1`** (load column B after A — default on
- * `yarn preview`), lower **`REPRO_RESPONSE_KB`**, or confirm with **`next start`**.
+ * **`REPRO_NESTED_STREAM_SERIAL_COLUMNS=1`** (load column B after A — e.g. `yarn preview:without-inc-cache` or `.dev.vars`), lower **`REPRO_RESPONSE_KB`**, or confirm with **`next start`**.
  */
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Suspense } from 'react';

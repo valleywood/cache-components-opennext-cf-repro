@@ -26,7 +26,7 @@ const incrementalCache = useRegionalIncrementalCache
   : r2IncrementalCache;
 
 /**
- * `yarn preview` sets **`OPENNEXT_PREVIEW_DISABLE_INC_CACHE=1`**. The same flag enables a
+ * **`yarn preview:without-inc-cache`** sets **`OPENNEXT_PREVIEW_DISABLE_INC_CACHE=1`**. That enables a
  * **lightweight cache stack**: dummy tag cache, direct queue, dummy CDN purge — so `wrangler`
  * preview does not rely on Durable Object tag-cache replication under a burst of parallel
  * **`Link prefetch`** RSC requests (which otherwise often returns **500** locally).
@@ -55,12 +55,9 @@ const cloudflareConfig = defineCloudflareConfig({
 });
 
 /**
- * Local `yarn preview`: disable **runtime** incremental cache reads/writes so Workers always
- * miss the prerendered PPR shell in R2. Otherwise OpenNext can serve a **partial shell** on
- * cache HIT without streaming Suspense resolution (browser: “Connection closed” / “Page
- * couldn’t load”) — see https://github.com/opennextjs/opennextjs-cloudflare/issues/1115 .
- * **`yarn cf-build` / deploy** omits `OPENNEXT_PREVIEW_DISABLE_INC_CACHE` so production still
- * uses the incremental cache.
+ * **`yarn preview:without-inc-cache`**: disable **runtime** incremental cache reads/writes so
+ * Workers always miss the prerendered PPR shell in R2 (avoids [#1115](https://github.com/opennextjs/opennextjs-cloudflare/issues/1115) locally).
+ * Default **`yarn preview`** leaves the flag **off** so the repro matches storefront / `yarn cf-build`.
  */
 const openNextConfig: OpenNextConfig = {
   ...cloudflareConfig,
