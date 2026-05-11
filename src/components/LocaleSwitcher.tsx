@@ -7,7 +7,9 @@ import { routing } from '@/lib/i18n/routing';
 
 const linkPrefetch = process.env.NEXT_PUBLIC_REPRO_NAV_PREFETCH !== '0';
 
-export function LocaleSwitcher() {
+type Props = { bypassIntl?: boolean };
+
+function LocaleSwitcherI18n() {
   const locale = useLocale();
   const pathname = usePathname();
 
@@ -40,4 +42,23 @@ export function LocaleSwitcher() {
       ))}
     </div>
   );
+}
+
+export function LocaleSwitcher({ bypassIntl }: Props) {
+  if (bypassIntl) {
+    return (
+      <div
+        style={{
+          padding: '0.5rem 1rem',
+          background: '#f0f0f0',
+          fontSize: '0.85rem',
+        }}
+      >
+        <strong>REPRO_BYPASS_NEXT_INTL=1:</strong> English only — next-intl disabled
+        for repro isolation.
+      </div>
+    );
+  }
+
+  return <LocaleSwitcherI18n />;
 }

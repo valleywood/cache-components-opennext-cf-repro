@@ -32,6 +32,17 @@ After cloning: `corepack enable` (once per machine), then `yarn install`. **`REP
 
 Then **`yarn install`**. To switch back to stock, delete the entire **`resolutions`** object (and the comma before it), then **`yarn install`** again.
 
+### Optional: `REPRO_BYPASS_NEXT_INTL` (English-only, no next-intl)
+
+To see whether issues reproduce **without** next-intl (no `NextIntlClientProvider`, no `getRequestConfig` / `loadMessages`, **`createNextIntlPlugin` off**, **`next/link` + hardcoded copy**, only **`/en/*`**):
+
+1. **`yarn preview:bypass-intl`** or **`yarn preview:bypass-intl:without-inc-cache`** — sets **`REPRO_BYPASS_NEXT_INTL=1`** during **`opennextjs-cloudflare build`** / **`preview`** (Node side: `next.config`, middleware, **`generateStaticParams`**).
+2. **Worker must see the same value** during RSC: set **`REPRO_BYPASS_NEXT_INTL=1`** in **`.dev.vars`** (overrides **`wrangler.jsonc`**) or set **`"REPRO_BYPASS_NEXT_INTL": "1"`** in **`wrangler.jsonc`** → **`vars`** and **`env.harsh.vars`**. If the Worker still has **`0`** / unset while the bundle was built with **`1`**, layout and pages can disagree.
+
+Local **`yarn dev` / `yarn build`:** export **`REPRO_BYPASS_NEXT_INTL=1`** or use **`.env.local`** so **`next.config`** and the app stay in sync.
+
+`wrangler.jsonc` declares **`REPRO_BYPASS_NEXT_INTL`** (**`"0"`**) so it is an explicit Worker binding; use **`.dev.vars`** to flip to **`1`** without editing JSON.
+
 ### Local preview hygiene
 
 - **Worker vs shell:** The isolate reads **`REPRO_*`** from **`wrangler.jsonc`** (and **`.dev.vars`**, which wins locally). If **`REPRO_RESPONSE_KB`** is missing there, the app falls back to **512 KiB** — you may see **524 288** in the “Actual chars” UI, **parallel** columns (“Loading large payload…”), and **Flight** corruption (**raw Lorem**, **Connection closed**, **`Unexpected identifier`** in the console). **`cross-env` in npm `scripts` does not fix that by itself** (it mainly aligns the **Node** side during **`opennextjs-cloudflare build`**).
@@ -80,6 +91,8 @@ For deployed workers, set `REPRO_RESPONSE_KB` in the Wrangler dashboard or `wran
 | `yarn cf-build` | OpenNext worker + assets into `.open-next/` |
 | `yarn preview` | **Harsh:** full OpenNext stack with **runtime incremental cache on** (R2 + DO tag cache / queue / purge) + **`opennextjs-cloudflare preview --env harsh`** → **`wrangler.jsonc` / `env.harsh`** (`REPRO_RESPONSE_KB=64`, parallel columns, full Lorem in Flight). |
 | `yarn preview:without-inc-cache` | **Stable:** **`wrangler.jsonc` top-level `vars`** (`REPRO_RESPONSE_KB=8`, serial columns, **`REPRO_FLIGHT_SAFE_PAYLOAD=1`**) + dummy tag cache + prefetch off. No `--env` (not `harsh`). |
+| `yarn preview:bypass-intl` | Same as **`yarn preview`**, but **`REPRO_BYPASS_NEXT_INTL=1`** (strip next-intl; see README section). **Also** set **`REPRO_BYPASS_NEXT_INTL=1`** for the Worker (`.dev.vars` or `wrangler.jsonc`). |
+| `yarn preview:bypass-intl:without-inc-cache` | Same as **`preview:without-inc-cache`**, with **`REPRO_BYPASS_NEXT_INTL=1`** + same Worker note as above. |
 | `yarn cf-deploy` | Deploy worker (configure routes/account as needed) |
 | `yarn cf-typegen` | Regenerate `cloudflare-env.d.ts` (not committed by default) |
 

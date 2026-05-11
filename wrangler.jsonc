@@ -24,6 +24,7 @@
     "REPRO_RESPONSE_KB": "8",
     "REPRO_NESTED_STREAM_SERIAL_COLUMNS": "1",
     "REPRO_FLIGHT_SAFE_PAYLOAD": "1",
+    "REPRO_BYPASS_NEXT_INTL": "0",
   },
   "env": {
     "harsh": {
@@ -31,6 +32,7 @@
         "REPRO_RESPONSE_KB": "64",
         "REPRO_NESTED_STREAM_SERIAL_COLUMNS": "0",
         "REPRO_FLIGHT_SAFE_PAYLOAD": "0",
+        "REPRO_BYPASS_NEXT_INTL": "0",
       },
       "services": [
         {

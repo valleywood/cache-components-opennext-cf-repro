@@ -6,6 +6,7 @@ import { Suspense } from 'react';
 
 import { LocaleSwitcher } from '@/components/LocaleSwitcher';
 import { Nav } from '@/components/Nav';
+import { bypassNextIntl } from '@/lib/reproBypassNextIntl';
 import { routing } from '@/lib/i18n/routing';
 
 import '../globals.css';
@@ -16,11 +17,39 @@ type Props = {
 };
 
 export function generateStaticParams() {
+  if (bypassNextIntl()) {
+    return [{ locale: 'en' }];
+  }
   return routing.locales.map((locale) => ({ locale }));
 }
 
 export default async function LocaleLayout({ children, params }: Props) {
   const { locale } = await params;
+
+  if (bypassNextIntl()) {
+    if (locale !== 'en') {
+      notFound();
+    }
+    return (
+      <html lang="en">
+        <body>
+          <Suspense fallback={<div style={{ minHeight: 40, background: '#f0f0f0' }} />}>
+            <LocaleSwitcher bypassIntl />
+          </Suspense>
+          <Suspense
+            fallback={
+              <nav style={{ padding: '1rem', borderBottom: '1px solid #ccc' }}>
+                …
+              </nav>
+            }
+          >
+            <Nav />
+          </Suspense>
+          <main>{children}</main>
+        </body>
+      </html>
+    );
+  }
 
   if (!hasLocale(routing.locales, locale)) {
     notFound();
