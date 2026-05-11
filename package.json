@@ -9,15 +9,12 @@
     "start": "next start",
     "preview": "rimraf .open-next && cross-env NODE_ENV=production OPEN_NEXT_DEBUG=true OPENNEXT_DISABLE_REGIONAL_CACHE=1 REPRO_RESPONSE_KB=64 REPRO_NESTED_STREAM_SERIAL_COLUMNS=0 opennextjs-cloudflare build && cross-env NODE_ENV=production OPEN_NEXT_DEBUG=true OPENNEXT_DISABLE_REGIONAL_CACHE=1 REPRO_RESPONSE_KB=64 REPRO_NESTED_STREAM_SERIAL_COLUMNS=0 opennextjs-cloudflare preview --env harsh",
     "preview:without-inc-cache": "rimraf .open-next && cross-env NODE_ENV=production OPEN_NEXT_DEBUG=true OPENNEXT_DISABLE_REGIONAL_CACHE=1 OPENNEXT_PREVIEW_DISABLE_INC_CACHE=1 REPRO_RESPONSE_KB=8 REPRO_NESTED_STREAM_SERIAL_COLUMNS=1 REPRO_FLIGHT_SAFE_PAYLOAD=1 NEXT_PUBLIC_REPRO_NAV_PREFETCH=0 opennextjs-cloudflare build && cross-env NODE_ENV=production OPEN_NEXT_DEBUG=true OPENNEXT_DISABLE_REGIONAL_CACHE=1 OPENNEXT_PREVIEW_DISABLE_INC_CACHE=1 REPRO_RESPONSE_KB=8 REPRO_NESTED_STREAM_SERIAL_COLUMNS=1 REPRO_FLIGHT_SAFE_PAYLOAD=1 NEXT_PUBLIC_REPRO_NAV_PREFETCH=0 opennextjs-cloudflare preview",
-    "preview:bypass-intl": "rimraf .open-next && cross-env NODE_ENV=production OPEN_NEXT_DEBUG=true OPENNEXT_DISABLE_REGIONAL_CACHE=1 REPRO_BYPASS_NEXT_INTL=1 REPRO_RESPONSE_KB=64 REPRO_NESTED_STREAM_SERIAL_COLUMNS=0 opennextjs-cloudflare build && cross-env NODE_ENV=production OPEN_NEXT_DEBUG=true OPENNEXT_DISABLE_REGIONAL_CACHE=1 REPRO_BYPASS_NEXT_INTL=1 REPRO_RESPONSE_KB=64 REPRO_NESTED_STREAM_SERIAL_COLUMNS=0 opennextjs-cloudflare preview --env harsh -- --var REPRO_BYPASS_NEXT_INTL:1",
-    "preview:bypass-intl:without-inc-cache": "rimraf .open-next && cross-env NODE_ENV=production OPEN_NEXT_DEBUG=true OPENNEXT_DISABLE_REGIONAL_CACHE=1 REPRO_BYPASS_NEXT_INTL=1 OPENNEXT_PREVIEW_DISABLE_INC_CACHE=1 REPRO_RESPONSE_KB=8 REPRO_NESTED_STREAM_SERIAL_COLUMNS=1 REPRO_FLIGHT_SAFE_PAYLOAD=1 NEXT_PUBLIC_REPRO_NAV_PREFETCH=0 opennextjs-cloudflare build && cross-env NODE_ENV=production OPEN_NEXT_DEBUG=true OPENNEXT_DISABLE_REGIONAL_CACHE=1 REPRO_BYPASS_NEXT_INTL=1 OPENNEXT_PREVIEW_DISABLE_INC_CACHE=1 REPRO_RESPONSE_KB=8 REPRO_NESTED_STREAM_SERIAL_COLUMNS=1 REPRO_FLIGHT_SAFE_PAYLOAD=1 NEXT_PUBLIC_REPRO_NAV_PREFETCH=0 opennextjs-cloudflare preview -- --var REPRO_BYPASS_NEXT_INTL:1",
     "cf-deploy": "opennextjs-cloudflare deploy",
     "cf-typegen": "wrangler types --env-interface CloudflareEnv ./cloudflare-env.d.ts"
   },
   "dependencies": {
     "@opennextjs/cloudflare": "^1.19.3",
     "next": "^16.2.4",
-    "next-intl": "^4.9.0",
     "react": "19.2.4",
     "react-dom": "19.2.4"
   },

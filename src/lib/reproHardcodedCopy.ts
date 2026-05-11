@@ -1,4 +1,4 @@
-/** Inline copy for `REPRO_BYPASS_NEXT_INTL=1` (mirrors messages/en.json). */
+/** Inline copy for the English-only repro mode. */
 export const reproHardcoded = {
   Nav: {
     home: 'Home',
@@ -12,7 +12,7 @@ export const reproHardcoded = {
   Home: {
     title: 'Home',
     intro:
-      'Minimal repro for use cache / Cache Components on OpenNext Cloudflare (next-intl bypassed). Nav links use prefetch for stress. Each page ships a large cached blob (REPRO_RESPONSE_KB).',
+      'Minimal repro for use cache / Cache Components on OpenNext Cloudflare. Nav links use prefetch for stress. Each page ships a large cached blob (REPRO_RESPONSE_KB).',
   },
   PageA: {
     title: 'Page A',

@@ -5,13 +5,11 @@
  * Flight stream was likely corrupted (chunk ordering on the worker). Mitigations:
  * **`REPRO_NESTED_STREAM_SERIAL_COLUMNS=1`** (load column B after A — e.g. `yarn preview:without-inc-cache` or `.dev.vars`), lower **`REPRO_RESPONSE_KB`**, or confirm with **`next start`**.
  */
-import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 
 import { PageWithMassivePayload } from '@/components/PageWithMassivePayload';
 import { loadCachedPayload } from '@/lib/cached';
-import { bypassNextIntl } from '@/lib/reproBypassNextIntl';
 import { reproHardcoded as H } from '@/lib/reproHardcodedCopy';
 import { nestedStreamSerialColumns } from '@/lib/reproNestedStreamEnv';
 
@@ -39,29 +37,17 @@ export default function NestedStreamPage(props: Props) {
 async function OuterShell(props: Props) {
   const { locale } = await props.params;
 
-  if (bypassNextIntl()) {
-    if (locale !== 'en') notFound();
-    await sleep(8);
-    const c = H.NestedStream;
-    return (
-      <div>
-        <h1>{c.title}</h1>
-        <p style={{ maxWidth: '52rem', lineHeight: 1.5 }}>{c.intro}</p>
-        <Suspense fallback={<p>Loading grid…</p>}>
-          <MiddleGrid {...props} />
-        </Suspense>
-      </div>
-    );
+  if (locale !== 'en') {
+    notFound();
   }
 
-  setRequestLocale(locale);
   await sleep(8);
-  const t = await getTranslations('NestedStream');
+  const c = H.NestedStream;
 
   return (
     <div>
-      <h1>{t('title')}</h1>
-      <p style={{ maxWidth: '52rem', lineHeight: 1.5 }}>{t('intro')}</p>
+      <h1>{c.title}</h1>
+      <p style={{ maxWidth: '52rem', lineHeight: 1.5 }}>{c.intro}</p>
       <Suspense fallback={<p>Loading grid…</p>}>
         <MiddleGrid {...props} />
       </Suspense>
@@ -72,9 +58,7 @@ async function OuterShell(props: Props) {
 async function MiddleGrid(props: Props) {
   const { locale } = await props.params;
 
-  if (!bypassNextIntl()) {
-    setRequestLocale(locale);
-  } else if (locale !== 'en') {
+  if (locale !== 'en') {
     notFound();
   }
 
@@ -127,35 +111,12 @@ async function ColumnBlockSequential(
 ) {
   const { locale } = await props.params;
 
-  if (bypassNextIntl()) {
-    if (locale !== 'en') notFound();
-    await sleep(staggerMs);
-    const c = H.NestedStream;
-    const data = await loadCachedPayload('/nested-stream', locale, `col-${label}`);
-
-    return (
-      <section
-        style={{
-          border: '1px solid #ccc',
-          borderRadius: 8,
-          padding: '1rem',
-          minWidth: 0,
-        }}
-      >
-        <h2 style={{ marginTop: 0 }}>{c.columnTitle(label)}</h2>
-        <p style={{ fontSize: '0.9rem', color: '#444' }}>{c.columnIntro}</p>
-        <PageWithMassivePayload
-          title={c.massiveSectionTitle(label)}
-          intro={<p>{c.massiveSectionIntro(label)}</p>}
-          data={data}
-        />
-      </section>
-    );
+  if (locale !== 'en') {
+    notFound();
   }
 
-  setRequestLocale(locale);
   await sleep(staggerMs);
-  const t = await getTranslations('NestedStream');
+  const c = H.NestedStream;
   const data = await loadCachedPayload('/nested-stream', locale, `col-${label}`);
 
   return (
@@ -167,11 +128,11 @@ async function ColumnBlockSequential(
         minWidth: 0,
       }}
     >
-      <h2 style={{ marginTop: 0 }}>{t('columnTitle', { label })}</h2>
-      <p style={{ fontSize: '0.9rem', color: '#444' }}>{t('columnIntro')}</p>
+      <h2 style={{ marginTop: 0 }}>{c.columnTitle(label)}</h2>
+      <p style={{ fontSize: '0.9rem', color: '#444' }}>{c.columnIntro}</p>
       <PageWithMassivePayload
-        title={t('massiveSectionTitle', { label })}
-        intro={<p>{t('massiveSectionIntro', { label })}</p>}
+        title={c.massiveSectionTitle(label)}
+        intro={<p>{c.massiveSectionIntro(label)}</p>}
         data={data}
       />
     </section>
@@ -185,32 +146,12 @@ async function ColumnFrame({
 }: Props & { label: string; staggerMs: number }) {
   const { locale } = await params;
 
-  if (bypassNextIntl()) {
-    if (locale !== 'en') notFound();
-    await sleep(staggerMs);
-    const c = H.NestedStream;
-
-    return (
-      <section
-        style={{
-          border: '1px solid #ccc',
-          borderRadius: 8,
-          padding: '1rem',
-          minWidth: 0,
-        }}
-      >
-        <h2 style={{ marginTop: 0 }}>{c.columnTitle(label)}</h2>
-        <p style={{ fontSize: '0.9rem', color: '#444' }}>{c.columnIntro}</p>
-        <Suspense fallback={<p>Loading large payload…</p>}>
-          <ColumnMassivePayload locale={locale} label={label} />
-        </Suspense>
-      </section>
-    );
+  if (locale !== 'en') {
+    notFound();
   }
 
-  setRequestLocale(locale);
   await sleep(staggerMs);
-  const t = await getTranslations('NestedStream');
+  const c = H.NestedStream;
 
   return (
     <section
@@ -221,8 +162,8 @@ async function ColumnFrame({
         minWidth: 0,
       }}
     >
-      <h2 style={{ marginTop: 0 }}>{t('columnTitle', { label })}</h2>
-      <p style={{ fontSize: '0.9rem', color: '#444' }}>{t('columnIntro')}</p>
+      <h2 style={{ marginTop: 0 }}>{c.columnTitle(label)}</h2>
+      <p style={{ fontSize: '0.9rem', color: '#444' }}>{c.columnIntro}</p>
       <Suspense fallback={<p>Loading large payload…</p>}>
         <ColumnMassivePayload locale={locale} label={label} />
       </Suspense>
@@ -237,30 +178,18 @@ async function ColumnMassivePayload({
   locale: string;
   label: string;
 }) {
-  if (bypassNextIntl()) {
-    if (locale !== 'en') notFound();
-    await sleep(16);
-    const c = H.NestedStream;
-    const data = await loadCachedPayload('/nested-stream', locale, `col-${label}`);
-
-    return (
-      <PageWithMassivePayload
-        title={c.massiveSectionTitle(label)}
-        intro={<p>{c.massiveSectionIntro(label)}</p>}
-        data={data}
-      />
-    );
+  if (locale !== 'en') {
+    notFound();
   }
 
-  setRequestLocale(locale);
   await sleep(16);
-  const t = await getTranslations('NestedStream');
+  const c = H.NestedStream;
   const data = await loadCachedPayload('/nested-stream', locale, `col-${label}`);
 
   return (
     <PageWithMassivePayload
-      title={t('massiveSectionTitle', { label })}
-      intro={<p>{t('massiveSectionIntro', { label })}</p>}
+      title={c.massiveSectionTitle(label)}
+      intro={<p>{c.massiveSectionIntro(label)}</p>}
       data={data}
     />
   );

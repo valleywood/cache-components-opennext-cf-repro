@@ -2,7 +2,7 @@
 
 > **Single branch.** **Stock** `@opennextjs/aws` is the default: there is no **`resolutions`** entry in **`package.json`**. Expect **`Buffer.from(undefined)`**-style adapter failures on **`yarn preview`** once R2 serves PPR/postponed incremental-cache entries. To use the same **Yarn patch** as **ecom-app-storefront** (tolerate missing **`rsc`** / segment payloads), add the block in **Stock vs patched `@opennextjs/aws`** below and run **`yarn install`** — JSON has no comments, so keep the snippet in this README (or your editor notes) when toggling.
 
-Minimal **Next.js Cache Components** (`use cache`, `cacheLife`, `cacheTag`) repro deployed like **ecom-app-storefront**: **OpenNext Cloudflare** + **Wrangler** with R2 incremental cache and the same Durable Object bindings (queue, sharded tag cache, purge). **next-intl** is wired the same way as the storefront (`defineRouting` with `localePrefix: 'always'`, `localeDetection: false`, `getRequestConfig` + per-request cached locale, `loadMessages` with **at → de** message fallback).
+Minimal **Next.js Cache Components** (`use cache`, `cacheLife`, `cacheTag`) repro deployed like **ecom-app-storefront**: **OpenNext Cloudflare** + **Wrangler** with R2 incremental cache and the same Durable Object bindings (queue, sharded tag cache, purge). The app is intentionally **English-only** (`/en/*`) with hardcoded copy to keep the repro focused on cache/streaming behavior.
 
 The committed file **`.yarn/patches/@opennextjs-aws-npm-3.10.4-36712c26c6.patch`** is inactive until you add **`resolutions`**; it stays in-tree so you do not need a second branch or to recover the patch from history.
 
@@ -31,18 +31,6 @@ After cloning: `corepack enable` (once per machine), then `yarn install`. **`REP
 ```
 
 Then **`yarn install`**. To switch back to stock, delete the entire **`resolutions`** object (and the comma before it), then **`yarn install`** again.
-
-### Optional: `REPRO_BYPASS_NEXT_INTL` (English-only, no next-intl)
-
-To see whether issues reproduce **without** next-intl (no `NextIntlClientProvider`, no `getRequestConfig` / `loadMessages`, **`createNextIntlPlugin` off**, **`next/link` + hardcoded copy**, only **`/en/*`**):
-
-- **`yarn preview:bypass-intl`** / **`yarn preview:bypass-intl:without-inc-cache`** — **`cross-env`** sets **`REPRO_BYPASS_NEXT_INTL=1`** during **`opennextjs-cloudflare build`** (Node: `next.config`, middleware, **`generateStaticParams`**). The preview step passes **`--var REPRO_BYPASS_NEXT_INTL:1`** through to **Wrangler `dev`**, so the Worker sees **`1`** as well — **no `.dev.vars` or extra shell exports required** for these two scripts.
-
-For **`yarn dev`** or a manual **`yarn build`** / **`opennextjs-cloudflare build`** (no bypass script), set **`REPRO_BYPASS_NEXT_INTL=1`** in the shell, **`.env.local`**, or **`.dev.vars`** so the value matches what you expect.
-
-If **`.dev.vars`** defines **`REPRO_BYPASS_NEXT_INTL`**, it can override other sources for local preview — keep it in sync with bypass mode (`1`) or delete the line.
-
-`wrangler.jsonc` still lists **`REPRO_BYPASS_NEXT_INTL": "0"`** as the default binding when not overridden by **`--var`** or **`.dev.vars`**.
 
 ### Local preview hygiene
 
@@ -92,8 +80,6 @@ For deployed workers, set `REPRO_RESPONSE_KB` in the Wrangler dashboard or `wran
 | `yarn cf-build` | OpenNext worker + assets into `.open-next/` |
 | `yarn preview` | **Harsh:** full OpenNext stack with **runtime incremental cache on** (R2 + DO tag cache / queue / purge) + **`opennextjs-cloudflare preview --env harsh`** → **`wrangler.jsonc` / `env.harsh`** (`REPRO_RESPONSE_KB=64`, parallel columns, full Lorem in Flight). |
 | `yarn preview:without-inc-cache` | **Stable:** **`wrangler.jsonc` top-level `vars`** (`REPRO_RESPONSE_KB=8`, serial columns, **`REPRO_FLIGHT_SAFE_PAYLOAD=1`**) + dummy tag cache + prefetch off. No `--env` (not `harsh`). |
-| `yarn preview:bypass-intl` | Same as **`yarn preview`**, but next-intl bypassed (**`REPRO_BYPASS_NEXT_INTL=1`** at build + **`wrangler dev --var`** — no extra env files needed). |
-| `yarn preview:bypass-intl:without-inc-cache` | Same as **`preview:without-inc-cache`**, with the same bypass wiring as above. |
 | `yarn cf-deploy` | Deploy worker (configure routes/account as needed) |
 | `yarn cf-typegen` | Regenerate `cloudflare-env.d.ts` (not committed by default) |
 
@@ -115,12 +101,11 @@ Same **`wrangler.jsonc`** whether you use stock or patched `@opennextjs/aws`: **
 ## What’s in the app
 
 - **`cacheComponents: true`** in `next.config.ts`
-- **`next-intl`**: `createNextIntlPlugin` → `src/lib/i18n/request.ts`, `src/middleware.ts` (`createMiddleware`), `createNavigation` for **`Link`**, messages under `messages/*.json`
 - **`src/lib/cached.ts`**: `'use cache'` with `cacheTag('repro', routeKey, locale, …)` so cache keys include **locale** (like real layout data)
-- **Routes** (always prefixed): `/en`, `/en/a`, `/en/items/1`, … (locales: `en`, `no`, `se`, `dk`, `fi`, `de`, `at`)
-- **`LocaleSwitcher`**: client `useLocale` + `usePathname` + `Link` with `locale={…}`; **`prefetch`** follows **`NEXT_PUBLIC_REPRO_NAV_PREFETCH`** (default **on**; **`preview:without-inc-cache`** sets **`0`**)
-- **`Nav`**: async `getTranslations` + locale-aware `Link`; **`prefetch`** follows **`NEXT_PUBLIC_REPRO_NAV_PREFETCH`**
-- **`[locale]/layout.tsx`**: `LocaleSwitcher` and `Nav` wrapped in **`<Suspense>`** so Cache Components + `/items/[id]` PPR can prerender (mirrors constraints you hit with next-intl in the shell)
+- **Routes** (English only): `/en`, `/en/a`, `/en/items/1`, …
+- **`LocaleSwitcher`**: static banner that indicates temporary English-only repro mode
+- **`Nav`**: hardcoded English labels; **`prefetch`** follows **`NEXT_PUBLIC_REPRO_NAV_PREFETCH`**
+- **`[locale]/layout.tsx`**: `LocaleSwitcher` and `Nav` wrapped in **`<Suspense>`** so Cache Components + `/items/[id]` PPR can prerender
 
 Use this to compare hangs or stuck requests: default **`yarn preview`** already leaves prefetch **on**; on **`yarn build` + `yarn start`** you can stress further with explicit env if needed. Share as a small public repro with Vercel/OpenNext/Cloudflare.
 
