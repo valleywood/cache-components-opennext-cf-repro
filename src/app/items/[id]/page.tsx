@@ -1,4 +1,3 @@
-import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 
 import { PageWithMassivePayload } from '@/components/PageWithMassivePayload';
@@ -6,7 +5,7 @@ import { loadCachedPayload } from '@/lib/cached';
 import { reproHardcoded as H } from '@/lib/reproHardcodedCopy';
 
 type Props = {
-  params: Promise<{ locale: string; id: string }>;
+  params: Promise<{ id: string }>;
 };
 
 function ItemFallback() {
@@ -14,14 +13,9 @@ function ItemFallback() {
 }
 
 async function ItemBody({ params }: Props) {
-  const { locale, id } = await params;
-
-  if (locale !== 'en') {
-    notFound();
-  }
-
+  const { id } = await params;
   const c = H.Item;
-  const data = await loadCachedPayload(`/items/[id]`, locale, id);
+  const data = await loadCachedPayload(`/items/[id]`, 'en', id);
 
   return (
     <PageWithMassivePayload

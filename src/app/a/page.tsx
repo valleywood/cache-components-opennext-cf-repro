@@ -1,20 +1,9 @@
-import { notFound } from 'next/navigation';
-
 import { PageWithMassivePayload } from '@/components/PageWithMassivePayload';
 import { loadCachedPayload } from '@/lib/cached';
 import { reproHardcoded as H } from '@/lib/reproHardcodedCopy';
 
-type Props = {
-  params: Promise<{ locale: string }>;
-};
-
-export default async function PageA({ params }: Props) {
-  const { locale } = await params;
-
-  if (locale !== 'en') {
-    notFound();
-  }
-  const data = await loadCachedPayload('/a', locale);
+export default async function PageA() {
+  const data = await loadCachedPayload('/a', 'en');
 
   return (
     <PageWithMassivePayload

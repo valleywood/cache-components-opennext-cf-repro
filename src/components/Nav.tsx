@@ -19,25 +19,25 @@ export async function Nav() {
         marginBottom: '1rem',
       }}
     >
-      <Link href="/en" prefetch={linkPrefetch}>
+      <Link href="/" prefetch={linkPrefetch}>
         {t.home}
       </Link>
-      <Link href="/en/a" prefetch={linkPrefetch}>
+      <Link href="/a" prefetch={linkPrefetch}>
         {t.pageA}
       </Link>
-      <Link href="/en/b" prefetch={linkPrefetch}>
+      <Link href="/b" prefetch={linkPrefetch}>
         {t.pageB}
       </Link>
-      <Link href="/en/c" prefetch={linkPrefetch}>
+      <Link href="/c" prefetch={linkPrefetch}>
         {t.pageC}
       </Link>
-      <Link href="/en/nested-stream" prefetch={linkPrefetch}>
+      <Link href="/nested-stream" prefetch={linkPrefetch}>
         {t.nestedStream}
       </Link>
-      <Link href="/en/items/1" prefetch={linkPrefetch}>
+      <Link href="/items/1" prefetch={linkPrefetch}>
         {t.item1}
       </Link>
-      <Link href="/en/items/2" prefetch={linkPrefetch}>
+      <Link href="/items/2" prefetch={linkPrefetch}>
         {t.item2}
       </Link>
     </nav>

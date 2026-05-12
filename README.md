@@ -2,7 +2,7 @@
 
 > **Single branch.** **Stock** `@opennextjs/aws` is the default: there is no **`resolutions`** entry in **`package.json`**. Expect **`Buffer.from(undefined)`**-style adapter failures on **`yarn preview`** once R2 serves PPR/postponed incremental-cache entries. To use the same **Yarn patch** as **ecom-app-storefront** (tolerate missing **`rsc`** / segment payloads), add the block in **Stock vs patched `@opennextjs/aws`** below and run **`yarn install`** — JSON has no comments, so keep the snippet in this README (or your editor notes) when toggling.
 
-Minimal **Next.js Cache Components** (`use cache`, `cacheLife`, `cacheTag`) repro deployed like **ecom-app-storefront**: **OpenNext Cloudflare** + **Wrangler** with R2 incremental cache and the same Durable Object bindings (queue, sharded tag cache, purge). The app is intentionally **English-only** (`/en/*`) with hardcoded copy to keep the repro focused on cache/streaming behavior.
+Minimal **Next.js Cache Components** (`use cache`, `cacheLife`, `cacheTag`) repro deployed like **ecom-app-storefront**: **OpenNext Cloudflare** + **Wrangler** with R2 incremental cache and the same Durable Object bindings (queue, sharded tag cache, purge). The app is intentionally **English-only** (top-level routes like `/`, `/a`, `/items/1`) with hardcoded copy to keep the repro focused on cache/streaming behavior.
 
 The committed file **`.yarn/patches/@opennextjs-aws-npm-3.10.4-36712c26c6.patch`** is inactive until you add **`resolutions`**; it stays in-tree so you do not need a second branch or to recover the patch from history.
 
@@ -51,6 +51,7 @@ Each route’s cached payload includes a big ASCII blob so HTML + incremental ca
 | `REPRO_FLIGHT_SAFE_PAYLOAD` | **`1`** in **`wrangler.jsonc` / `vars`** (stable); **`0`** in **`env.harsh`**. When **`1`**, **`loadCachedPayload`** does not put the Lorem blob in Flight. |
 | `REPRO_RESPONSE_KB` | Set in **`wrangler.jsonc`** for the Worker (**`8`** default / **`64`** in **`env.harsh`**). If unset in the isolate, **`loadCachedPayload` falls back to 512 KB** → parallel columns + huge Flight (classic broken stream). npm **`cross-env` alone does not fix that. |
 | `REPRO_NESTED_STREAM_SERIAL_COLUMNS` | **`1`** (serial) in top-level **`wrangler.jsonc` `vars`**; **`0`** (parallel **`Suspense`**) in **`env.harsh`**. |
+| `REPRO_NESTED_STREAM_PARALLEL_COLUMNS` | Number of sibling `/nested-stream` columns when serial mode is **off** (default **2**, clamped to 2..8). Higher values increase concurrent RSC payload pressure. |
 
 Examples:
 
@@ -89,9 +90,9 @@ Same **`wrangler.jsonc`** whether you use stock or patched `@opennextjs/aws`: **
 
 | `@opennextjs/aws` | Command | Typical outcome |
 |-------------------|---------|-----------------|
-| **Stock** (no **`resolutions`**) | **`yarn preview`** | **Adapter** failures are common (`Failed to get body cache`, **`Buffer.from(undefined)`**) once the real R2 incremental cache serves PPR/postponed entries. **`/en/nested-stream`** / **`/items/*`** are sharp corners. If a response gets through, **harsh** REPRO + **Flight** can still break the page in the browser. |
+| **Stock** (no **`resolutions`**) | **`yarn preview`** | **Adapter** failures are common (`Failed to get body cache`, **`Buffer.from(undefined)`**) once the real R2 incremental cache serves PPR/postponed entries. **`/nested-stream`** / **`/items/*`** are sharp corners. If a response gets through, **harsh** REPRO + **Flight** can still break the page in the browser. |
 | **Stock** | **`yarn preview:without-inc-cache`** | **Runtime** incremental cache is off (**`OPENNEXT_PREVIEW_DISABLE_INC_CACHE=1`** in the script) + dummy tag/queue + **stable `vars`**, so many **adapter** read paths are avoided and the UI is usually **navigable** — but you are **not** exercising the same stack as production or **`yarn preview`**. |
-| **Patched** (**`resolutions`** + **`yarn install`**) | **`yarn preview`** | **Adapter** patch applied — you most often get past **`Buffer.from`**. **Harsh** profile: real DO tag cache + queue, **runtime** incremental cache on, **parallel** `/nested-stream`, **full Lorem in Flight**, prefetch on → **Flight / #1115 / prefetch** issues on **`/nested-stream`** are **expected** (flaky reloads, raw Lorem in the shell). |
+| **Patched** (**`resolutions`** + **`yarn install`**) | **`yarn preview`** | **Adapter** patch applied — you most often get past **`Buffer.from`** and ordinary page-to-page navigation can look healthy. **Harsh** profile: real DO tag cache + queue, **runtime** incremental cache on, **parallel** `/nested-stream`, **full Lorem in Flight**, prefetch on → **Flight / #1115 / prefetch** issues on **`/nested-stream`** are still **expected**, including partial hangs where one column stays on **`Loading large payload…`** indefinitely. |
 | **Patched** | **`yarn preview:without-inc-cache`** | **Intended stable loop:** **stable `vars`** (small target, **serial** columns, **`REPRO_FLIGHT_SAFE_PAYLOAD=1`**), **dummy** tag cache + **direct** queue + **dummy** purge, **`OPENNEXT_PREVIEW_DISABLE_INC_CACHE=1`** (no runtime R2 i-cache reads/writes), **`NEXT_PUBLIC_REPRO_NAV_PREFETCH=0`**. **Not** storefront-identical; it trades realism for a usable Wrangler browser session. |
 | Either | **`yarn build` + `yarn start`** | **Node** server on **:3000** — **not** the Worker Flight path; use for “does Next itself behave?” vs “does Wrangler behave?”. |
 | Either | **`yarn cf-build`** (+ `wrangler dev` yourself) | Matches **deploy-shaped** worker without the npm **`preview`** wrappers; tune **`--env`** / vars yourself. **Default `wrangler deploy`** uses **top-level `vars`** (stable REPRO); **`--env harsh`** for stress deploy. |
@@ -101,17 +102,16 @@ Same **`wrangler.jsonc`** whether you use stock or patched `@opennextjs/aws`: **
 ## What’s in the app
 
 - **`cacheComponents: true`** in `next.config.ts`
-- **`src/lib/cached.ts`**: `'use cache'` with `cacheTag('repro', routeKey, locale, …)` so cache keys include **locale** (like real layout data)
-- **Routes** (English only): `/en`, `/en/a`, `/en/items/1`, …
-- **`LocaleSwitcher`**: static banner that indicates temporary English-only repro mode
+- **`src/lib/cached.ts`**: `'use cache'` with `cacheTag('repro', routeKey, locale, …)`; locale is currently hardcoded to `en` in routes but kept in cache keys to mirror production-shaped tagging.
+- **Routes** (English only): `/`, `/a`, `/b`, `/c`, `/nested-stream`, `/items/[id]`
 - **`Nav`**: hardcoded English labels; **`prefetch`** follows **`NEXT_PUBLIC_REPRO_NAV_PREFETCH`**
-- **`[locale]/layout.tsx`**: `LocaleSwitcher` and `Nav` wrapped in **`<Suspense>`** so Cache Components + `/items/[id]` PPR can prerender
+- **`src/app/layout.tsx`**: root shell with `Nav` wrapped in **`<Suspense>`** so Cache Components + `/items/[id]` PPR can prerender
 
 Use this to compare hangs or stuck requests: default **`yarn preview`** already leaves prefetch **on**; on **`yarn build` + `yarn start`** you can stress further with explicit env if needed. Share as a small public repro with Vercel/OpenNext/Cloudflare.
 
 ### RSC prefetch + tag cache **500** on `wrangler preview`
 
-A full **document** request to **`/en/nested-stream`** can be **200** while many follow-up **`GET … ?_rsc=…`** requests (from **`Link prefetch`**) return **500**. Causes we have seen:
+A full **document** request to **`/nested-stream`** can be **200** while many follow-up **`GET … ?_rsc=…`** requests (from **`Link prefetch`**) return **500**. Causes we have seen:
 
 1. **`NEXT_TAG_CACHE_DO_SHARDED`** / queue DOs under **parallel** prefetches on local Wrangler (often paired with “Durable Object class not exported” warnings).
 2. Mitigation used here: **`yarn preview:without-inc-cache`** sets **`OPENNEXT_PREVIEW_DISABLE_INC_CACHE=1`**, so **`open-next.config.ts`** switches to **`tagCache: 'dummy'`**, **`queue: 'direct'`**, **`cachePurge: 'dummy'`**, and **`NEXT_PUBLIC_REPRO_NAV_PREFETCH=0`**. Default `yarn preview` and `yarn cf-build` keep the full stack (like the storefront).
@@ -139,6 +139,6 @@ Two separate classes of failure you may see on default `yarn preview` **after** 
 1. **PPR cache hit on Workers** ([opennextjs-cloudflare#1115](https://github.com/opennextjs/opennextjs-cloudflare/issues/1115)): the **first** full navigation can work, then a **refresh** or **prefetch** may serve an **incomplete** cached shell so the RSC stream ends early. Browsers report **Connection closed** or **This page couldn’t load**.  
    **`yarn preview:without-inc-cache`** sets **`OPENNEXT_PREVIEW_DISABLE_INC_CACHE=1`** so the worker **never reads/writes** the incremental cache at runtime (always effectively “miss” → full streaming) — useful to confirm the issue is cache-related.
 
-2. **Huge / parallel RSC chunks on `/nested-stream`**: two **`Suspense`** columns each streaming a full **`REPRO_RESPONSE_KB`** blob can **corrupt the Flight stream** on Workers (browser: **This page couldn’t load** or stray `Lorem ipsum` in the shell) **even when Wrangler logs 200**. Default **`yarn preview`** uses **`REPRO_NESTED_STREAM_SERIAL_COLUMNS=0`** and **`REPRO_RESPONSE_KB=64`** to surface that on **`/en/nested-stream`**. **Mitigate:** **`yarn preview:without-inc-cache`** (forces **`1`**) or set **`REPRO_NESTED_STREAM_SERIAL_COLUMNS=1`** in **`.dev.vars`**, and/or lower **`REPRO_RESPONSE_KB`**. **`yarn build` + `yarn start`** hits **Node**, not the Worker streaming stack.
+2. **Huge / parallel RSC chunks on `/nested-stream`**: sibling **`Suspense`** columns each streaming a full **`REPRO_RESPONSE_KB`** blob can **corrupt or stall the Flight stream** on Workers **even when Wrangler logs 200**. With the **`@opennextjs/aws`** patch enabled, this often shifts from an immediate adapter crash to a more app-level symptom: normal navigation may work, but `/nested-stream` can render partially and leave a column such as **`Column B`** stuck on **`Loading large payload…`** indefinitely. Default **`yarn preview`** uses **`REPRO_NESTED_STREAM_SERIAL_COLUMNS=0`**, **`REPRO_NESTED_STREAM_PARALLEL_COLUMNS=2`**, and **`REPRO_RESPONSE_KB=64`** to surface that on **`/nested-stream`**. **Mitigate:** **`yarn preview:without-inc-cache`** (forces serial mode) or set **`REPRO_NESTED_STREAM_SERIAL_COLUMNS=1`** in **`.dev.vars`**, and/or lower **`REPRO_RESPONSE_KB`**. **`yarn build` + `yarn start`** hits **Node**, not the Worker streaming stack.
 
 If problems persist after changing OpenNext or Next versions, use the reset in **Local preview hygiene** above. Large **`REPRO_RESPONSE_KB`** inflates prerendered RSC blobs; lower it to isolate size-related edge cases.

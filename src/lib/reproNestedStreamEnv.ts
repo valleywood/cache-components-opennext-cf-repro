@@ -8,3 +8,22 @@
 export function nestedStreamSerialColumns(): boolean {
   return process.env.REPRO_NESTED_STREAM_SERIAL_COLUMNS === '1';
 }
+
+/**
+ * Number of sibling columns rendered by `/nested-stream` when in parallel mode.
+ * Clamped to keep local preview usable while still allowing heavier stress.
+ */
+export function nestedStreamParallelColumns(): number {
+  const raw = Number(process.env.REPRO_NESTED_STREAM_PARALLEL_COLUMNS ?? '2');
+  if (!Number.isFinite(raw)) {
+    return 2;
+  }
+  const n = Math.floor(raw);
+  if (n < 2) {
+    return 2;
+  }
+  if (n > 8) {
+    return 8;
+  }
+  return n;
+}
