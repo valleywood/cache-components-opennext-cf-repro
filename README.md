@@ -1,6 +1,6 @@
 # cache-components-cf
 
-> **Single branch.** **`@opennextjs/aws@4.0.2`** is **Yarn-patched** by default (see **`resolutions`** in **`package.json`** and **`.yarn/patches/@opennextjs-aws-npm-4.0.2-7e625b6239.patch`**) so incremental-cache reads tolerate missing **`rsc`** / segment payloads. Remove **`resolutions`** and run **`yarn install`** for **stock** upstream and expect **`Buffer.from(undefined)`**-style adapter failures on **`yarn preview`** once R2 serves PPR/postponed entries.
+> **Single branch.** **`@opennextjs/aws@4.0.2`** is **Yarn-patched** by default (see **`resolutions`** in **`package.json`** and **`.yarn/patches/@opennextjs-aws-npm-4.0.2-7e625b6239.patch`**) so incremental-cache reads tolerate missing **`rsc`** / segment payloads. **`@opennextjs/cloudflare`** is pinned to **`1.19.10`** (exact) so a careless range bump does not pull a different **`@opennextjs/aws`** major/minor and silently break the patch. **`next`** and **`wrangler`** are also exact (**`16.2.6`**, **`4.93.0`**) for a stable repro surface. Remove **`resolutions`** and run **`yarn install`** for **stock** upstream and expect **`Buffer.from(undefined)`**-style adapter failures on **`yarn preview`** once R2 serves PPR/postponed entries.
 
 Minimal **Next.js Cache Components** (`use cache`, `cacheLife`, `cacheTag`) repro deployed like **ecom-app-storefront**: **OpenNext Cloudflare** + **Wrangler** with R2 incremental cache and the same Durable Object bindings (queue, sharded tag cache, purge). The app is intentionally **English-only** (top-level routes like `/`, `/a`, `/items/1`) with hardcoded copy to keep the repro focused on cache/streaming behavior.
 
@@ -10,22 +10,15 @@ After cloning: `corepack enable` (once per machine), then `yarn install`. **`REP
 
 ### Stock vs patched `@opennextjs/aws` (toggle in `package.json`)
 
-**Patched (default in this repo):** **`package.json`** includes **`resolutions`** for **`@opennextjs/aws@npm:4.0.2`** → **`.yarn/patches/@opennextjs-aws-npm-4.0.2-7e625b6239.patch`**. Run **`yarn install`**.
+**Patched (default in this repo):** **`package.json`** pins **`@opennextjs/cloudflare`**: **`1.19.10`** (exact) and **`resolutions`** for **`@opennextjs/aws@npm:4.0.2`** → **`.yarn/patches/@opennextjs-aws-npm-4.0.2-7e625b6239.patch`**. Run **`yarn install`**. When you upgrade Cloudflare, re-check the resolved **`@opennextjs/aws`** version and refresh the patch file if **`dist/adapters/cache.js`** changed.
 
 **Stock (upstream adapter):** remove the entire **`resolutions`** block (and the comma before it if needed), then **`yarn install`** again.
 
 Example of the patched **`resolutions`** entry only (merge with your real **`devDependencies`**):
 
 ```json
-  "devDependencies": {
-    "@cloudflare/workers-types": "^4.20260511.1",
-    "@types/node": "^22.19.18",
-    "@types/react": "19.2.14",
-    "@types/react-dom": "19.2.3",
-    "cross-env": "^10.1.0",
-    "rimraf": "^6.1.3",
-    "typescript": "5.9.3",
-    "wrangler": "^4.90.0"
+  "dependencies": {
+    "@opennextjs/cloudflare": "1.19.10"
   },
   "resolutions": {
     "@opennextjs/aws@npm:4.0.2": "patch:@opennextjs/aws@npm%3A4.0.2#./.yarn/patches/@opennextjs-aws-npm-4.0.2-7e625b6239.patch"

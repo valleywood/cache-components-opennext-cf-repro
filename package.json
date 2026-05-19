@@ -13,8 +13,8 @@
     "cf-typegen": "wrangler types --env-interface CloudflareEnv ./cloudflare-env.d.ts"
   },
   "dependencies": {
-    "@opennextjs/cloudflare": "^1.19.9",
-    "next": "^16.2.6",
+    "@opennextjs/cloudflare": "1.19.10",
+    "next": "16.2.6",
     "react": "19.2.6",
     "react-dom": "19.2.6"
   },
@@ -26,9 +26,6 @@
     "cross-env": "^10.1.0",
     "rimraf": "^6.1.3",
     "typescript": "5.9.3",
-    "wrangler": "^4.90.0"
-  },
-  "resolutions": {
-    "@opennextjs/aws@npm:4.0.2": "patch:@opennextjs/aws@npm%3A4.0.2#./.yarn/patches/@opennextjs-aws-npm-4.0.2-7e625b6239.patch"
+    "wrangler": "4.93.0"
   }
 }
