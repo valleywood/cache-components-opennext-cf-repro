@@ -27,5 +27,8 @@
     "rimraf": "^6.1.3",
     "typescript": "5.9.3",
     "wrangler": "^4.90.0"
+  },
+  "resolutions": {
+    "@opennextjs/aws@npm:4.0.2": "patch:@opennextjs/aws@npm%3A4.0.2#./.yarn/patches/@opennextjs-aws-npm-4.0.2-7e625b6239.patch"
   }
 }

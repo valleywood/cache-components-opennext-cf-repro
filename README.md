@@ -1,36 +1,36 @@
 # cache-components-cf
 
-> **Single branch.** **Stock** `@opennextjs/aws` is the default: there is no **`resolutions`** entry in **`package.json`**. Expect **`Buffer.from(undefined)`**-style adapter failures on **`yarn preview`** once R2 serves PPR/postponed incremental-cache entries. To use the same **Yarn patch** as **ecom-app-storefront** (tolerate missing **`rsc`** / segment payloads), add the block in **Stock vs patched `@opennextjs/aws`** below and run **`yarn install`** — JSON has no comments, so keep the snippet in this README (or your editor notes) when toggling.
+> **Single branch.** **`@opennextjs/aws@4.0.2`** is **Yarn-patched** by default (see **`resolutions`** in **`package.json`** and **`.yarn/patches/@opennextjs-aws-npm-4.0.2-7e625b6239.patch`**) so incremental-cache reads tolerate missing **`rsc`** / segment payloads. Remove **`resolutions`** and run **`yarn install`** for **stock** upstream and expect **`Buffer.from(undefined)`**-style adapter failures on **`yarn preview`** once R2 serves PPR/postponed entries.
 
 Minimal **Next.js Cache Components** (`use cache`, `cacheLife`, `cacheTag`) repro deployed like **ecom-app-storefront**: **OpenNext Cloudflare** + **Wrangler** with R2 incremental cache and the same Durable Object bindings (queue, sharded tag cache, purge). The app is intentionally **English-only** (top-level routes like `/`, `/a`, `/items/1`) with hardcoded copy to keep the repro focused on cache/streaming behavior.
 
-The committed file **`.yarn/patches/@opennextjs-aws-npm-3.10.4-36712c26c6.patch`** is inactive until you add **`resolutions`**; it stays in-tree so you do not need a second branch or to recover the patch from history.
+The patch matches **ecom-style** mitigations (optional **`rsc` / `rscData`**, `segmentContent ?? ""`) against **`dist/adapters/cache.js`** in **`@opennextjs/aws`**.
 
 After cloning: `corepack enable` (once per machine), then `yarn install`. **`REPRO_*` vars must be defined for the Worker**, not only via npm **`cross-env`**: the isolate does **not** see your shell env. This repo sets them in **`wrangler.jsonc`** — top-level **`vars`** = stable preview (**`yarn preview:without-inc-cache`**), **`env.harsh`** = stress (**`yarn preview`**, which runs **`opennextjs-cloudflare preview --env harsh`**). **`cross-env`** on build/preview still aligns the **Node** side during **`opennextjs-cloudflare build`**. **`OPENNEXT_*`** stays in **`.dev.vars`**. Anything you add under **`REPRO_*`** in **`.dev.vars`** **overrides** `wrangler.jsonc` locally.
 
 ### Stock vs patched `@opennextjs/aws` (toggle in `package.json`)
 
-**Stock (default in this repo):** the top-level **`package.json`** ends with **`devDependencies`** and has **no** **`resolutions`** key. Run **`yarn install`**.
+**Patched (default in this repo):** **`package.json`** includes **`resolutions`** for **`@opennextjs/aws@npm:4.0.2`** → **`.yarn/patches/@opennextjs-aws-npm-4.0.2-7e625b6239.patch`**. Run **`yarn install`**.
 
-**Patched:** add **`resolutions`** as the last top-level key (and a comma after the **`devDependencies`** closing `}`). Example — merge with your real **`devDependencies`** block; paths are relative to the repo root:
+**Stock (upstream adapter):** remove the entire **`resolutions`** block (and the comma before it if needed), then **`yarn install`** again.
+
+Example of the patched **`resolutions`** entry only (merge with your real **`devDependencies`**):
 
 ```json
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20260424.1",
-    "@types/node": "^22.15.21",
+    "@cloudflare/workers-types": "^4.20260511.1",
+    "@types/node": "^22.19.18",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
     "cross-env": "^10.1.0",
     "rimraf": "^6.1.3",
     "typescript": "5.9.3",
-    "wrangler": "^4.84.1"
+    "wrangler": "^4.90.0"
   },
   "resolutions": {
-    "@opennextjs/aws@npm:3.10.4": "patch:@opennextjs/aws@npm%3A3.10.4#./.yarn/patches/@opennextjs-aws-npm-3.10.4-36712c26c6.patch"
+    "@opennextjs/aws@npm:4.0.2": "patch:@opennextjs/aws@npm%3A4.0.2#./.yarn/patches/@opennextjs-aws-npm-4.0.2-7e625b6239.patch"
   }
 ```
-
-Then **`yarn install`**. To switch back to stock, delete the entire **`resolutions`** object (and the comma before it), then **`yarn install`** again.
 
 ### Local preview hygiene
 
@@ -128,13 +128,13 @@ Next **16** can emit **PPR / postponed** prerender entries where the incremental
 
 With **stock** **`package.json`** (no patch), this is **expected** once those cache shapes are served (especially **`yarn preview`** with real R2 reads). **`yarn preview:without-inc-cache`** skips *runtime* incremental cache reads and may **mask** that adapter failure while you debug other Wrangler issues.
 
-**With the Yarn patch enabled** (see **Stock vs patched `@opennextjs/aws`** above): **`yarn install`** applies **`.yarn/patches/@opennextjs-aws-npm-3.10.4-36712c26c6.patch`** — optional **`rsc` / `rscData`**, `segmentContent ?? ""`, same mitigation pattern as **ecom-app-storefront**. Use that when you need a working incremental-cache read path and want to focus on issues like [#1115](https://github.com/opennextjs/opennextjs-cloudflare/issues/1115) or Flight corruption without **`Buffer.from(undefined)`** first.
+**With the Yarn patch enabled** (default **`resolutions`**): **`yarn install`** applies **`.yarn/patches/@opennextjs-aws-npm-4.0.2-7e625b6239.patch`** — optional **`rsc` / `rscData`**, `segmentContent ?? ""`, same mitigation pattern as **ecom-app-storefront**. Use that when you need a working incremental-cache read path and want to focus on issues like [#1115](https://github.com/opennextjs/opennextjs-cloudflare/issues/1115) or Flight corruption without **`Buffer.from(undefined)`** first.
 
 Earlier failures from the **regional Cache API** wrapper are separate; preview scripts still set **`OPENNEXT_DISABLE_REGIONAL_CACHE=1`** for fewer moving parts locally.
 
 ### “Page couldn’t load” / `Connection closed` (default `yarn preview`)
 
-Two separate classes of failure you may see on default `yarn preview` **after** the incremental-cache adapter successfully returns a payload (with **stock** `@opennextjs/aws`, the adapter often **throws first** — enable the **Yarn patch** above to reach these behaviors reliably):
+Two separate classes of failure you may see on default `yarn preview` **after** the incremental-cache adapter successfully returns a payload (**remove `resolutions`** for stock `@opennextjs/aws` so the adapter often **throws first** — with the **default Yarn patch** you more often reach these behaviors reliably):
 
 1. **PPR cache hit on Workers** ([opennextjs-cloudflare#1115](https://github.com/opennextjs/opennextjs-cloudflare/issues/1115)): the **first** full navigation can work, then a **refresh** or **prefetch** may serve an **incomplete** cached shell so the RSC stream ends early. Browsers report **Connection closed** or **This page couldn’t load**.  
    **`yarn preview:without-inc-cache`** sets **`OPENNEXT_PREVIEW_DISABLE_INC_CACHE=1`** so the worker **never reads/writes** the incremental cache at runtime (always effectively “miss” → full streaming) — useful to confirm the issue is cache-related.
